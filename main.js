@@ -8,31 +8,24 @@ const excelToJson = require('convert-excel-to-json');
 
 enigmaConfig.mixins = enigmaMixin;
 
-// READ XLS  
-const filePath = path.join(__dirname, './assets/data/qsDays.xlsx');
- 
-const feedbackExcel = excelToJson(
-    {
-    sourceFile: filePath,
-    header:{
-        rows: 1
-    },
-    columnToKey: {
+const APP_NAME = `__newApp`;
+const FILE_PATH = path.join(__dirname, './assets/data/qsDays.xlsx');
+const xlsFileStructure = {
+  sourceFile: FILE_PATH,
+  header:{rows: 1},
+  columnToKey: {
       'A': '{{A1}}',
       'B': '{{B1}}',
       'C': '{{C1}}',
       'D': '{{D1}}',
     }
-});
+}
 
-// Create array of TXT-objects to be analysed
-let textObj = feedbackExcel.Feedback.map(val => {
-  return {textId: val.FeedbackId, textText: val.FeedbackText}
-});
+let texts = excelToJson(xlsFileStructure);
+let fieldNames = Object.keys(texts.Feedback[0])
+let textObj = texts.Feedback.map(text => ({textId: text[fieldNames[0]], textText: text[fieldNames[3]]}));
 
-
-// Analyse all 100 Texts // current limit by google nat lang
-async function analyseText(textObj) {
+async function SentimentAnalysis(textObj) {
     const client = new language.LanguageServiceClient();
     
     let analysedTxt = textObj.map(async text => {
@@ -57,20 +50,20 @@ async function analyseText(textObj) {
   return await Promise.all(analysedTxt)
 };
 
+SentimentAnalysis(textObj).then(async analysedTextJson => {
 
-// Create app in qlik sense
-analyseText(textObj).then(analysedTextJson => {
-
+  // Create Qlik Sense APP
   const individualSentencesJson = analysedTextJson.map(analysedText => analysedText.sentences.map(sentence => sentence)[0])
 
   const halyard = new Halyard()
 
-  const feedbackTable = new Halyard.Table(filePath, {
+  // create Master data table
+  const feedbackTable = new Halyard.Table(FILE_PATH, {
     name:'userFeedback', fields: [
-      { src: 'FeedbackId', name: '%FeedbackId'},
-      { src: 'Datum', name: '%Datum'},
-      { src: 'KundenId', name: '%KundenId'},
-      { src: 'FeedbackText', name: 'FeedbackText'}
+      { src: fieldNames[0], name: '%FeedbackId'},
+      { src: fieldNames[1], name: '%Datum'},
+      { src: fieldNames[2], name: '%KundenId'},
+      { src: fieldNames[3], name: 'FeedbackText'}
     ],
       headerRowNr: 0
   })
@@ -82,17 +75,16 @@ analyseText(textObj).then(analysedTextJson => {
   halyard.addTable(textEval);
   halyard.addTable(sentenceEval);
 
+  // open qlik sense
+  const qix = await enigma.create(enigmaConfig).open()
   
-  enigma.create(enigmaConfig).open().then(qix => {
-    console.log('after create')
-    const appName = `__newApp`;
-    qix.createAppUsingHalyard(appName, halyard).then(result => {
-        console.log(`App created and reloaded - ${appName}.qvf`);
-        process.exit(1);
-        }, (err) => {console.log(err);});
-    })
-    .catch(err => console.log(err));
-
-}).catch(err => {
-  console.log(err)
+  try {
+      let result = await qix.reloadAppUsingHalyard(APP_NAME, halyard, true)
+      console.log(`App created and reloaded - ${APP_NAME}.qvf`);
+      process.exit(1);
+  } catch(err) {
+      console.log('could not create app')
+      process.exit(1);
+  }
+  
 })
