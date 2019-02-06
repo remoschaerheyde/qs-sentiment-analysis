@@ -1,0 +1,23 @@
+{
+  "name": "sentiment-analysis",
+  "version": "1.0.0",
+  "description": "A simple sentiment analysis using Qlik Sense and the Google Natural Language API",
+  "main": "main.js",
+  "scripts": {
+    "start": "main.js"
+  },
+  "keywords": [
+    "Sentiment",
+    "Analysis",
+    "Qlik",
+    "Sense"
+  ],
+  "author": "Heyde Schweiz AG | Remo Schär",
+  "license": "MIT",
+  "dependencies": {
+    "@google-cloud/language": "^2.0.1",
+    "convert-excel-to-json": "^1.6.0",
+    "enigma.js": "^2.4.0",
+    "ws": "^6.1.3"
+  }
+}
