@@ -4,7 +4,7 @@ A simple node script that conducts a sentiment anaysis and creates a finished Ql
 
 ## Prerequisites
 
-For this example to work you need a local Qlik Sense Desktop installation and Node.js installed on your machine. Be aware that Qlik Sense Desktop needs to be running in the background when the node script is being excecuted. Please also make sure that you refrence the correct schema version that corresponds to engine version of your Qlik Sense Desktop installation in your enigma-config.js file in the /assets/js/config directory. You can find the engine version of your current Qlik Sense installation the Qlik API-insights page: https://api-insights.qlik.com.
+For this example to work you need a local Qlik Sense Desktop installation and Node.js installed on your machine. Be aware that Qlik Sense Desktop needs to be running in the background when the node script is being excecuted. Please also make sure that you reference the correct schema version that corresponds to engine version of your Qlik Sense Desktop installation in your enigma-config.js file in the /assets/js/config directory. You can find the engine version of your current Qlik Sense installation the Qlik API-insights page: https://api-insights.qlik.com.
 
 Furthermore, you also need a valid google account and a json file that contains the api-key for the Natural Language Api. Please simply follow the quickstart guide in the documentation of the Google natural language documentation: https://cloud.google.com/natural-language/docs/quickstart-client-libraries
 
